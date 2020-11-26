@@ -11,6 +11,13 @@ let todos: Todo[] = [
     }
 ];
 
+// todo express middleware, required field. +unit test
+// inmemory state to disk , read from json.
+// unhundled exception !!!!!!!!!!!!!!
+// request logger.
+// error handling
+//swagger
+
 todosRouter.get('/', (_request, response) => {
     return response.json(todos);
 });
