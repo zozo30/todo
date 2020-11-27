@@ -1,38 +1,51 @@
 import { Router } from 'express'
+import { check, validationResult } from 'express-validator'
 import { Todo } from '../interfaces/todos'
 import * as TodoService from '../services/todoService'
 import HttpException from '../exception/HttpException'
+import { NextFunction } from 'express-serve-static-core'
 
 const todosRouter = Router()
 
-todosRouter.get('/', async (_request, response, next) => {
+const descriptionValidators = [
+    check('description').exists(),
+    check('description').isLength({ min: 3 })
+]
+
+todosRouter.get('/', async (_request: any, response: any, next: NextFunction) => {
     try {
         const todos: Todo[] = await TodoService.list()
-        return response.json(todos)
+        return response.json({ Ok: true, todos })
     } catch (error) {
         return next(new HttpException(400, error))
     }
 })
 
-todosRouter.get('/:id', async (request, response, next) => {
+todosRouter.get('/:id', async (request: any, response: any, next: NextFunction) => {
     try {
         const todo: Todo = await TodoService.get(request.params.id)
-        return response.json(todo)
+        return response.json({ Ok: true, todo })
     } catch (error) {
         return next(new HttpException(400, error))
     }
 })
 
-todosRouter.post('/', async (request, response, next) => {
-    try {
-        const createdItem: Todo = await TodoService.create(request.body.description)
-        return response.json(createdItem)
-    } catch (error) {
-        return next(new HttpException(400, error))
-    }
-})
+todosRouter.post('/', [...descriptionValidators],
+    async (request: any, response: any, next: NextFunction) => {
 
-todosRouter.delete('/:id', async (request, response, next) => {
+        const errors = validationResult(request)
+        if (!errors.isEmpty())
+            return next(new HttpException(422, 'ValidationError', errors.array().map(e => e.msg)))
+
+        try {
+            const todo: Todo = await TodoService.create(request.body.description)
+            return response.json({ Ok: true, todo })
+        } catch (error) {
+            return next(new HttpException(400, error))
+        }
+    })
+
+todosRouter.delete('/:id', async (request: any, response: any, next: NextFunction) => {
     try {
         const removed = await TodoService.remove(request.params.id)
         return response.json({ Ok: removed })
@@ -41,7 +54,12 @@ todosRouter.delete('/:id', async (request, response, next) => {
     }
 })
 
-todosRouter.put('/:id', async (request, response, next) => {
+todosRouter.put('/:id', [...descriptionValidators], async (request: any, response: any, next: NextFunction) => {
+
+    const errors = validationResult(request)
+    if (!errors.isEmpty())
+        return next(new HttpException(422, 'ValidationError', errors.array().map(e => e.msg)))
+
     try {
         const modified = await TodoService.modify(request.params.id, request.body.description)
         return response.json({ Ok: modified })
@@ -50,4 +68,4 @@ todosRouter.put('/:id', async (request, response, next) => {
     }
 })
 
-export default todosRouter;
+export default todosRouter
