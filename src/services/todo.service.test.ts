@@ -7,6 +7,7 @@ import { Todo } from '../interfaces/todos'
 describe('TodoService', () => {
     let testItemId: string
     before((done) => {
+
         InMemoryState.readDb().then((success) => {
             if (!success) return done('DB is not ready!')
             const todos: Todo[] = InMemoryState.getCollection('todos')
