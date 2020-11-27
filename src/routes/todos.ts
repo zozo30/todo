@@ -1,47 +1,53 @@
-import { Router } from 'express';
-import { Todo } from '../interfaces/todos';
-import shortid from 'shortid';
+import { Router } from 'express'
+import { Todo } from '../interfaces/todos'
+import * as TodoService from '../services/todoService'
+import HttpException from '../exception/HttpException'
 
-const todosRouter = Router();
+const todosRouter = Router()
 
-let todos: Todo[] = [
-    {
-        id: shortid.generate(),
-        description: 'Sample todo'
+todosRouter.get('/', async (_request, response, next) => {
+    try {
+        const todos: Todo[] = await TodoService.list()
+        return response.json(todos)
+    } catch (error) {
+        return next(new HttpException(400, error))
     }
-];
+})
 
-// todo express middleware, required field. +unit test
-// inmemory state to disk , read from json.
-// unhundled exception !!!!!!!!!!!!!!
-// request logger.
-// error handling
-// swagger
+todosRouter.get('/:id', async (request, response, next) => {
+    try {
+        const todo: Todo = await TodoService.get(request.params.id)
+        return response.json(todo)
+    } catch (error) {
+        return next(new HttpException(400, error))
+    }
+})
 
-todosRouter.get('/', (_request, response) => {
-    return response.json(todos);
-});
+todosRouter.post('/', async (request, response, next) => {
+    try {
+        const createdItem: Todo = await TodoService.create(request.body.description)
+        return response.json(createdItem)
+    } catch (error) {
+        return next(new HttpException(400, error))
+    }
+})
 
-todosRouter.get('/:id', (request, response) => {
-    const todo: Todo = todos.find(todo => todo.id === request.params.id);
-    return response.json(todo);
-});
+todosRouter.delete('/:id', async (request, response, next) => {
+    try {
+        const removed = await TodoService.remove(request.params.id)
+        return response.json({ Ok: removed })
+    } catch (error) {
+        return next(new HttpException(400, error))
+    }
+})
 
-todosRouter.post('/', (request, response) => {
-    const todo: Todo = { id: shortid.generate(), description: request.body.description };
-    todos = [...todos, todo];
-    return response.json(todo);
-});
-
-todosRouter.delete('/:id', (request, response) => {
-    todos.filter(todo => todo.id !== request.params.id);
-    return response.json(todos);
-});
-
-todosRouter.put('/:id', (request, response) => {
-    todos.map(todo => todo.id === request.params.id ? { ...todo, description: request.body.description } : todo);
-    const todo: Todo = todos.find(todo => todo.id === request.params.id);
-    return response.json(todo);
-});
+todosRouter.put('/:id', async (request, response, next) => {
+    try {
+        const modified = await TodoService.modify(request.params.id, request.body.description)
+        return response.json({ Ok: modified })
+    } catch (error) {
+        return next(new HttpException(400, error))
+    }
+})
 
 export default todosRouter;

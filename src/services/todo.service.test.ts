@@ -9,7 +9,7 @@ describe('TodoService', () => {
     before((done) => {
         InMemoryState.readDb().then((success) => {
             if (!success) return done('DB is not ready!')
-            let todos: Array<Todo> = InMemoryState.getCollection('todos')
+            const todos: Todo[] = InMemoryState.getCollection('todos')
 
             const todo: Todo = { id: shortid.generate(), description: 'test_todo_###' }
             testItemId = todo.id

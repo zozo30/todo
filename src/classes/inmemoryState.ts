@@ -28,7 +28,7 @@ class InMemoryState {
         return this.state[collectionName];
     }
 
-    setCollection(collectionName: string, data: Array<any>) {
+    setCollection(collectionName: string, data: any[]) {
         this.state[collectionName] = data
     }
 
