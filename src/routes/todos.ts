@@ -26,7 +26,7 @@ todosRouter.get('/:id', async (request: any, response: any, next: NextFunction) 
         const todo: Todo = await TodoService.get(request.params.id)
         return response.json({ Ok: true, todo })
     } catch (error) {
-        return next(new HttpException(400, error))
+        return next(new HttpException(404, error))
     }
 })
 

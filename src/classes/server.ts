@@ -1,15 +1,16 @@
 import { IServer } from '../interfaces/server'
 import Config from './config'
 import express from 'express'
+import { EventEmitter } from 'events'
 
-class Server implements IServer {
+class Server extends EventEmitter implements IServer {
     public running = false
     public errored = false
     public app = express()
     public config = new Config()
 
     constructor() {
-        this.init()
+        super()
     }
 
     async init() {
@@ -20,9 +21,10 @@ class Server implements IServer {
                 this.running = true;
                 // tslint:disable-next-line:no-console
                 console.log(`server started at http://localhost:${this.config.port}`)
-                resolve(true);
+                this.emit('ready')
+                return resolve(true);
             })
-        });
+        })
     }
 
     applyMiddleware(middleware: any) {

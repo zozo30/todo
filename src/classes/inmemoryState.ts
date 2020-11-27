@@ -13,7 +13,7 @@ class InMemoryState {
         dotenv.config()
 
         const dbFileName = process.env.NODE_ENV === 'test' ? `${process.env.IN_MEMORY_DB_FILE}.test` : process.env.IN_MEMORY_DB_FILE
-        
+
         this._dbFilePath = resolve(`${dbFileName}.json`)
         if (!this._dbFilePath && !this._dbFilePath.includes('.json'))
             throw new Error('dbFilePath not provided')

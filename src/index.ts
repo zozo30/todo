@@ -7,7 +7,10 @@ import routes from './routes'
 
 InMemoryState.registerCollection('todos')
 
+
 const server = new Server()
+
+server.init()
 // routes
 server.app.use(routes)
 // log requests => method and url.
