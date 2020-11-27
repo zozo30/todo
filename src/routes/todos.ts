@@ -16,7 +16,7 @@ let todos: Todo[] = [
 // unhundled exception !!!!!!!!!!!!!!
 // request logger.
 // error handling
-//swagger
+// swagger
 
 todosRouter.get('/', (_request, response) => {
     return response.json(todos);

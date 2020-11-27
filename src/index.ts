@@ -1,15 +1,15 @@
-import Server from './classes/server';
-import LoggerMiddleware from './middlewares/logger';
-import ErrorMiddleware from './middlewares/error';
-import NotFoundRoute from './middlewares/notFoundRoute';
+import Server from './classes/server'
+import LoggerMiddleware from './middlewares/logger'
+import ErrorMiddleware from './middlewares/error'
+import NotFoundRoute from './middlewares/notFoundRoute'
+import InMemoryState from './classes/inmemoryState'
 
-const server = new Server();
+InMemoryState.registerCollection('todos')
 
-//log requests => method and url.
-server.applyMiddleware(LoggerMiddleware);
-
-//requests where the route is not existing.
-server.applyMiddleware(NotFoundRoute);
-//should be the last middleware.
-server.applyMiddleware(ErrorMiddleware);
-
+const server = new Server()
+// log requests => method and url.
+server.applyMiddleware(LoggerMiddleware)
+// requests where the route is not existing.
+server.applyMiddleware(NotFoundRoute)
+// should be the last middleware.
+server.applyMiddleware(ErrorMiddleware)
