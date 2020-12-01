@@ -68,7 +68,6 @@ describe('TodosApi', () => {
                 try {
                     await axios.post(`${serverPath}/todos`)
                 } catch (error) {
-                    // tslint:disable-next-line:no-console
                     expect(error.response.data.status).equal(422)
                     expect(error.response.data.message).equal('ValidationError')
                 }

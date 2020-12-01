@@ -8,6 +8,7 @@ class Server extends EventEmitter implements IServer {
     public errored = false
     public app = express()
     public config = new Config()
+    private _appServer: any
 
     constructor() {
         super()
@@ -17,7 +18,7 @@ class Server extends EventEmitter implements IServer {
         this.app.use(express.json())
 
         return new Promise((resolve, _reject) => {
-            this.app.listen(this.config.port, () => {
+            this._appServer = this.app.listen(this.config.port, () => {
                 this.running = true;
                 // tslint:disable-next-line:no-console
                 console.log(`server started at http://localhost:${this.config.port}`)
@@ -25,6 +26,10 @@ class Server extends EventEmitter implements IServer {
                 return resolve(true);
             })
         })
+    }
+
+    dispose() {
+        this._appServer.close()
     }
 
     applyMiddleware(middleware: any) {
