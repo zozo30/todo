@@ -30,7 +30,7 @@ export class GraphQLOrmPagination {
         this.entityName = entityName
         Object.assign(query, { take: this.take, skip: this.skip })
         // tslint:disable-next-line:no-console
-        //console.log(Object.keys(graphqlFields(info)))
+        // console.log(Object.keys(graphqlFields(info)))
         // tslint:disable-next-line:no-console
         // console.log(JSON.stringify(info))
         // query.select = Object.keys(graphqlFields(info))

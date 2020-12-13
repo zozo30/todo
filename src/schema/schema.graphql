@@ -22,6 +22,22 @@ type ListResult {
   skip: Int
 }
 
+type SetCompletedResult {
+  id: Int!
+  completed: Boolean
+}
+
+type RemoveTodoResult {
+  id: Int!
+  removed: Boolean
+}
+
+type ModifyTodoResult {
+  id: Int!
+  description: String!
+  updatedAt: String!
+}
+
 input PaginationInput {
   skip: Int
   take: Int
@@ -49,7 +65,7 @@ type Query {
 
 type Mutation {
   createTodo(input: TodoInput!): Todo
-  modifyTodo(input: TodoModifyInput!): Boolean
-  removeTodo(id: Int!): Boolean
-  setCompleted(input: TodoCompletedInput): Boolean
+  modifyTodo(input: TodoModifyInput!): ModifyTodoResult
+  removeTodo(id: Int!): RemoveTodoResult
+  setCompleted(input: TodoCompletedInput!): SetCompletedResult
 }

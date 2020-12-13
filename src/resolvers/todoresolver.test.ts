@@ -57,7 +57,7 @@ describe('TodoGraphQL', () => {
                             id
                           }
                         }
-                      }                  
+                      }
                     `
                     try {
                         const response = await axios.post(graphPath, { query })
@@ -80,7 +80,7 @@ describe('TodoGraphQL', () => {
                             id
                           }
                         }
-                      }                  
+                      }
                     `
                     try {
                         const response = await axios.post(graphPath, { query })
