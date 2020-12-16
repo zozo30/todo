@@ -2,7 +2,6 @@ import { expect } from 'chai'
 import shortid from 'shortid'
 import * as TodoService from './todoService'
 import InMemoryState from '../classes/inmemoryState'
-import { Todo } from '../interfaces/todos'
 
 describe('TodoService', () => {
     let testItemId: string
@@ -10,9 +9,9 @@ describe('TodoService', () => {
 
         InMemoryState.readDb().then((success) => {
             if (!success) return done('DB is not ready!')
-            const todos: Todo[] = InMemoryState.getCollection('todos')
+            const todos = InMemoryState.getCollection('todos')
 
-            const todo: Todo = { id: shortid.generate(), description: 'test_todo_###' }
+            const todo = { id: shortid.generate(), description: 'test_todo_###' }
             testItemId = todo.id
 
             InMemoryState.setCollection('todos', [...todos, todo])

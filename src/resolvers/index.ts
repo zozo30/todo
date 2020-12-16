@@ -1,9 +1,8 @@
 import { IResolvers } from 'graphql-tools'
 import { Todos } from '../entities/todos'
-import { getRepository, Repository } from 'typeorm'
+import { getRepository, Like, Repository } from 'typeorm'
 import { ApolloError } from 'apollo-server-express'
 import { GraphQLOrmPagination, IPaginationResult } from '../utils/graphqlPagination'
-import moment from 'moment'
 
 const resolvers: IResolvers = {
     Query: {
@@ -16,6 +15,9 @@ const resolvers: IResolvers = {
             query.order = {
                 createdAt: 'DESC'
             }
+
+            if (filters && Object.prototype.hasOwnProperty.call(filters, 'search'))
+                query.where.description = Like(`%${filters.search}%`)
 
             const pagination = new GraphQLOrmPagination('todos', filters.pagination, query, info)
 
@@ -41,7 +43,7 @@ const resolvers: IResolvers = {
             const created: Todos = await todoRepository.save(todo)
             return created
         },
-        modifyTodo: async (_obj, args, _ctx): Promise<{ id: number, description: string, updatedAt: any }> => {
+        modifyTodo: async (_obj, args, _ctx): Promise<any> => {
             const todoRepository: Repository<Todos> = getRepository('todos')
             const todo = await todoRepository.findOne(args.input.id);
             if (!todo)
@@ -56,9 +58,12 @@ const resolvers: IResolvers = {
             }
 
             await todoRepository.update(args.input.id, update)
-            return { id: todo.id, description: args.input.description, updatedAt: moment(updatedAt).format('YYYY-MM-DD HH:mm:ss') }
+
+            const updatedTodo = await todoRepository.findOne(args.input.id);
+
+            return updatedTodo
         },
-        removeTodo: async (_obj, args, _ctx): Promise<{ id: number, removed: boolean }> => {
+        removeTodo: async (_obj, args, _ctx): Promise<any> => {
             const todoRepository: Repository<Todos> = getRepository('todos')
             const todo = await todoRepository.findOne(args.id);
             if (!todo)
@@ -68,7 +73,7 @@ const resolvers: IResolvers = {
                 .delete()
                 .whereInIds(args.id)
                 .execute()
-            return { id: todo.id, removed: true }
+            return todo
         },
         setCompleted: async (_obj, args, _ctx): Promise<{ id: number, completed: boolean }> => {
             const todoRepository: Repository<Todos> = getRepository('todos')
@@ -84,7 +89,8 @@ const resolvers: IResolvers = {
             }
 
             await todoRepository.update(args.input.id, update)
-            return { id: todo.id, completed }
+            const updatedTodo = await todoRepository.findOne(args.input.id);
+            return updatedTodo
         }
     }
 };

@@ -3,7 +3,6 @@ import shortid from 'shortid'
 import axios from 'axios'
 import Server from '../classes/server'
 import routes from '../routes'
-import { Todo } from '../interfaces/todos'
 import LoggerMiddleware from '../middlewares/logger'
 import ErrorMiddleware from '../middlewares/error'
 import NotFoundRoute from '../middlewares/notFoundRoute'
@@ -12,7 +11,7 @@ import InMemoryState from '../classes/inmemoryState'
 describe('TodosApi', () => {
     const server: Server = new Server()
     const serverPath = `http://localhost:${server.config.port}`
-    const testItem: Todo = { id: shortid.generate(), description: 'api_test_todo_###' }
+    const testItem = { id: shortid.generate(), description: 'api_test_todo_###', createdAt: new Date(), updatedAt: new Date(), completed: false }
     before((done) => {
         server.on('ready', () => {
 

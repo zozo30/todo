@@ -1,5 +1,4 @@
 import { EntitySchema, getRepository, Repository } from 'typeorm'
-import graphqlFields from 'graphql-fields'
 import { GraphQLResolveInfo } from 'graphql'
 
 export interface IPagination {
@@ -10,8 +9,6 @@ export interface IPagination {
 export interface IPaginationResult {
     items: EntitySchema[],
     total: number,
-    pages: number,
-    page: number,
     take: number,
     skip: number
 }
@@ -45,8 +42,8 @@ export class GraphQLOrmPagination {
         return {
             items,
             total,
-            pages: Math.ceil(total / this.take),
-            page: Math.floor(this.skip / this.take) + 1,
+            // pages: Math.ceil(total / this.take),
+            // page: Math.floor(this.skip / this.take) + 1,
             take: this.take,
             skip: this.skip
         }

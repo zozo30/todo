@@ -1,6 +1,5 @@
 import { Router } from 'express'
 import { check, validationResult } from 'express-validator'
-import { Todo } from '../interfaces/todos'
 import * as TodoService from '../services/todoService'
 import HttpException from '../exception/HttpException'
 import { NextFunction } from 'express-serve-static-core'
@@ -14,7 +13,7 @@ const descriptionValidators = [
 
 todosRouter.get('/', async (_request: any, response: any, next: NextFunction) => {
     try {
-        const todos: Todo[] = await TodoService.list()
+        const todos = await TodoService.list()
         return response.json({ Ok: true, todos })
     } catch (error) {
         return next(new HttpException(400, error))
@@ -23,7 +22,7 @@ todosRouter.get('/', async (_request: any, response: any, next: NextFunction) =>
 
 todosRouter.get('/:id', async (request: any, response: any, next: NextFunction) => {
     try {
-        const todo: Todo = await TodoService.get(request.params.id)
+        const todo = await TodoService.get(request.params.id)
         return response.json({ Ok: true, todo })
     } catch (error) {
         return next(new HttpException(404, error))
@@ -38,7 +37,7 @@ todosRouter.post('/', [...descriptionValidators],
             return next(new HttpException(422, 'ValidationError', errors.array().map(e => e.msg)))
 
         try {
-            const todo: Todo = await TodoService.create(request.body.description)
+            const todo = await TodoService.create(request.body.description)
             return response.json({ Ok: true, todo })
         } catch (error) {
             return next(new HttpException(400, error))

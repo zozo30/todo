@@ -3,6 +3,7 @@ scalar DateTime
 input TodoFilter {
   completed: Boolean
   pagination: PaginationInput
+  search: String
 }
 
 type Todo {
@@ -16,26 +17,8 @@ type Todo {
 type ListResult {
   items: [Todo]
   total: Int
-  page: Int
-  pages: Int
   take: Int
   skip: Int
-}
-
-type SetCompletedResult {
-  id: Int!
-  completed: Boolean
-}
-
-type RemoveTodoResult {
-  id: Int!
-  removed: Boolean
-}
-
-type ModifyTodoResult {
-  id: Int!
-  description: String!
-  updatedAt: String!
 }
 
 input PaginationInput {
@@ -65,7 +48,7 @@ type Query {
 
 type Mutation {
   createTodo(input: TodoInput!): Todo
-  modifyTodo(input: TodoModifyInput!): ModifyTodoResult
-  removeTodo(id: Int!): RemoveTodoResult
-  setCompleted(input: TodoCompletedInput!): SetCompletedResult
+  modifyTodo(input: TodoModifyInput!): Todo
+  removeTodo(id: Int!): Todo
+  setCompleted(input: TodoCompletedInput!): Todo
 }
