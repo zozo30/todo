@@ -1,98 +1,57 @@
 import { IResolvers } from 'graphql-tools'
-import { Todos } from '../entities/todos'
-import { getRepository, Like, Repository } from 'typeorm'
-import { ApolloError } from 'apollo-server-express'
-import { GraphQLOrmPagination, IPaginationResult } from '../utils/graphqlPagination'
+import { FindAndCountOptions, Op, Sequelize, WhereOptions } from 'sequelize'
+import { infoToProjection } from '../utils/graphql'
 
-const resolvers: IResolvers = {
-    Query: {
-        todos: async (_obj, { filters }, _ctx, info): Promise<IPaginationResult> => {
+export default (db: Sequelize): IResolvers => {
 
-            const query: any = { where: {} }
-            if (filters && Object.prototype.hasOwnProperty.call(filters, 'completed'))
-                query.where.completed = filters.completed
+    const model = db.model('Todo')
 
-            query.order = {
-                createdAt: 'DESC'
+    return {
+        Query: {
+            todos: async (_obj, { filters }, _ctx, info) => {
+
+                const selections = infoToProjection(info.fieldNodes[0], 'items')
+
+                const limit = filters?.pagination?.take !== undefined ? filters.pagination.take : 10
+                const offset = filters?.pagination?.skip !== undefined ? filters.pagination.skip : 0
+
+                const where: WhereOptions<{ completed?: boolean, description?: string }> = {}
+
+                const query = {
+                    offset,
+                    limit,
+                    order: [['createdAt', 'DESC']],
+                    where,
+                    attributes: selections
+                } as FindAndCountOptions
+
+
+                if (filters?.completed !== undefined)
+                    where.completed = filters.completed
+
+                if (filters?.search !== undefined)
+                    where.description = { [Op.like]: `%${filters.search}%` }
+
+                const { count, rows } = await model.findAndCountAll(query)
+
+                return { total: count, items: rows, take: limit, skip: offset }
+            },
+            todo: async (_obj, args, _ctx) => model.findOne({ where: { id: args.id } })
+        },
+        Mutation: {
+            createTodo: (_obj, { input }, _ctx) => model.create(input),
+            modifyTodo: async (_obj, { input }, _ctx) => {
+                const [success, updatedItem] = await model.update(input, { where: { id: input.id }, returning: true })
+                if (success !== 1) throw new Error('Update Error')
+                return updatedItem[0]
+            },
+            removeTodo: async (_obj, { id }, _ctx) => {
+                const itemForDelete = await model.findOne({ where: { id } })
+                if (!itemForDelete) throw new Error('Item not found')
+                const success = await model.destroy({ where: { id } })
+                if (!success) throw new Error('Delete failed')
+                return itemForDelete
             }
-
-            if (filters && Object.prototype.hasOwnProperty.call(filters, 'search'))
-                query.where.description = Like(`%${filters.search}%`)
-
-            const pagination = new GraphQLOrmPagination('todos', filters.pagination, query, info)
-
-            return pagination.getResult()
-        },
-        todo: async (_obj, args, _ctx): Promise<Todos> => {
-            const todoRepository: Repository<Todos> = getRepository('todos')
-            const todo: Todos = await todoRepository.findOne(args.id)
-
-            if (!todo)
-                throw new ApolloError('Todo not found!');
-
-            return todo
-        }
-    },
-    Mutation: {
-        createTodo: async (_obj, args, _ctx): Promise<Todos> => {
-            const todo: Todos = new Todos()
-            todo.description = args.input.description
-            todo.completed = false
-            todo.createdAt = new Date()
-            const todoRepository: Repository<Todos> = getRepository('todos')
-            const created: Todos = await todoRepository.save(todo)
-            return created
-        },
-        modifyTodo: async (_obj, args, _ctx): Promise<any> => {
-            const todoRepository: Repository<Todos> = getRepository('todos')
-            const todo = await todoRepository.findOne(args.input.id);
-            if (!todo)
-                throw new ApolloError('Todo not found!');
-
-            const updatedAt = new Date()
-
-            const update = {
-                description: args.input.description ? args.input.description : todo.description,
-                completed: Object.prototype.hasOwnProperty.call(args, 'completed') ? Boolean(args.input.completed) : todo.completed,
-                updatedAt
-            }
-
-            await todoRepository.update(args.input.id, update)
-
-            const updatedTodo = await todoRepository.findOne(args.input.id);
-
-            return updatedTodo
-        },
-        removeTodo: async (_obj, args, _ctx): Promise<any> => {
-            const todoRepository: Repository<Todos> = getRepository('todos')
-            const todo = await todoRepository.findOne(args.id);
-            if (!todo)
-                throw new ApolloError('Todo not found!');
-
-            await todoRepository.createQueryBuilder()
-                .delete()
-                .whereInIds(args.id)
-                .execute()
-            return todo
-        },
-        setCompleted: async (_obj, args, _ctx): Promise<{ id: number, completed: boolean }> => {
-            const todoRepository: Repository<Todos> = getRepository('todos')
-            const todo = await todoRepository.findOne(args.input.id);
-            if (!todo)
-                throw new ApolloError('Todo not found!');
-
-            const completed = Boolean(args.input.completed)
-
-            const update = {
-                completed,
-                updatedAt: new Date()
-            }
-
-            await todoRepository.update(args.input.id, update)
-            const updatedTodo = await todoRepository.findOne(args.input.id);
-            return updatedTodo
         }
     }
-};
-
-export default resolvers;
+}

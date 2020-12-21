@@ -1,5 +1,3 @@
-import { NextFunction, Response } from "express-serve-static-core";
-
-export default (_request: Request, response: Response, _next: NextFunction) => {
+export default (_: Request, response: any) => {
     response.status(404).send({ status: 404, message: 'API does not exist!' });
 }

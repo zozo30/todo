@@ -1,191 +1,139 @@
-
-import { init } from '../init'
 import axios from 'axios'
-import Server from '../classes/server'
 import { expect } from 'chai'
-import { getRepository, Repository } from 'typeorm'
-import { Todos } from '../entities/todos'
+import { print } from 'graphql';
+import gql from "graphql-tag";
+import initApp, { App } from '../app'
+
+var context: App
+var currenItemId: string
+
+function useGraphQL(query: any, variables: any) {
+    return axios.post(`http://localhost:${context.config.port}/graphql`, { query: print(query), variables })
+}
 
 describe('TodoGraphQL', () => {
-    let graphPath: string
-    let _server: Server
-    const TEST_TODO_DESCRIPTION = '#Test Todo'
 
-    before((done) => {
-        init().then((server) => {
-            _server = server
-            graphPath = `http://localhost:${server.config.port}/graphql`
-            // tslint:disable-next-line:no-console
-            console.log(graphPath)
-            done()
-        })
+    before(async () => {
+        context = await initApp()
     })
 
     after((done) => {
-        _server.dispose()
         done()
     })
 
+    beforeEach(async () => {
+        const createdItem: any = await context.db.model('Todo').create({ description: 'UNIT_TESTING_TODO_ITEM' })
+        currenItemId = createdItem.id
+    })
+
+    afterEach(async () => {
+        await context.db.model('Todo').destroy({ where: { id: currenItemId } })
+    })
+
     describe('CreateTodo', () => {
-        describe('success', () => {
+        describe('positive', () => {
             it('check', async () => {
-                const query = `
-                    mutation{
-                        createTodo(input:{description:"${TEST_TODO_DESCRIPTION}"}){id,description,createdAt}
-                    }
-                `
-                try {
-                    const response = await axios.post(graphPath, { query })
-                    expect(response.status).to.equal(200)
-                    expect(response.data.data).to.have.property('createTodo')
-                } catch (error) {
-                    throw new Error(error)
-                }
+                const query = gql`
+                    mutation CreateTodo ($input: TodoInput!){
+                        createTodo(input:$input){
+                            id,
+                            description,
+                            createdAt,
+                            updatedAt,
+                            completed
+                        }
+                    }`
+                const response = await useGraphQL(query, { input: { description: "from test" } })
+
+                await context.db.model('Todo').destroy({ where: { id: response.data.data?.createTodo?.id } })
+
+                expect(response.status).to.equal(200)
+                expect(response.data.data).to.have.property('createTodo')
+                expect(response.data.data.createTodo).to.have.property('description')
             })
         })
     })
 
     describe('ListTodos', () => {
-        describe('success', () => {
-            describe('withPagination', () => {
-                it('check', async () => {
-                    const query = `
-                    query {
-                        todos(filters: { pagination: { skip: 0, take: 10 } }) {
-                          total
-                          items {
-                            id
-                          }
+        describe('positive', () => {
+            it('check', async () => {
+                const query = gql`
+                    query ListTodos($filters:TodoFilter){
+                        todos(filters:$filters){take,skip,total,items{
+                            id,
+                            description,
+                            }
                         }
-                      }
-                    `
-                    try {
-                        const response = await axios.post(graphPath, { query })
-                        expect(response.status).to.equal(200)
-                        expect(response.data.data).to.have.property('todos')
-                        expect(response.data.data.todos.total).not.equal(0)
-                    } catch (error) {
-                        throw new Error(error)
-                    }
-                })
-            })
+                    }`
 
-            describe('withUncompletedFilter', () => {
-                it('check', async () => {
-                    const query = `
-                    query {
-                        todos(filters: { completed:false }) {
-                          total
-                          items {
-                            id
-                          }
+                const response = await useGraphQL(query, {
+                    filters: {
+                        completed: false,
+                        pagination: {
+                            take: 30,
                         }
-                      }
-                    `
-                    try {
-                        const response = await axios.post(graphPath, { query })
-                        expect(response.status).to.equal(200)
-                        expect(response.data.data).to.have.property('todos')
-                        expect(response.data.data.todos.total).not.equal(0)
-                    } catch (error) {
-                        throw new Error(error)
                     }
                 })
+
+                expect(response.status).to.equal(200)
+                expect(response.data.data).to.have.property('todos')
+                expect(response.data.data.todos.total).not.equal(0)
             })
         })
     })
 
     describe('GetTodo', () => {
-        describe('success', () => {
+        describe('positive', () => {
             it('check', async () => {
-                const todoRepository: Repository<Todos> = getRepository('todos')
-                const result = await todoRepository.createQueryBuilder().where({ description: TEST_TODO_DESCRIPTION }).limit(1).execute()
-                expect(result).lengthOf(1)
 
-                const query = `
-                    query {
-                        todo(id:${result[0].Todos_id}){
-                            id
-                        }
+                const query = gql`
+                    query GetTodo($id:Int!){
+                        todo(id:$id){id,description,completed,createdAt,updatedAt}
                     }
                 `
-                try {
-                    const response = await axios.post(graphPath, { query })
-                    expect(response.status).to.equal(200)
-                    expect(response.data.data).to.have.property('todo')
-                    expect(response.data.data.todo).to.not.equal(null)
-                } catch (error) {
-                    throw new Error(error)
-                }
+
+                const response = await useGraphQL(query, { id: currenItemId })
+
+                expect(response.status).to.equal(200)
+                expect(response.data.data).to.have.property('todo')
+                expect(response.data.data.todo).to.not.equal(null)
+
             })
         })
     })
 
-    describe('SetCompleted', () => {
-        it('check', async () => {
-            const todoRepository: Repository<Todos> = getRepository('todos')
-            const result = await todoRepository.createQueryBuilder().where({ description: TEST_TODO_DESCRIPTION }).limit(1).execute()
-            expect(result).lengthOf(1)
-
-            const query = `
-                mutation {
-                    setCompleted(input:{id:${result[0].Todos_id},completed:true})
-                }
-            `
-
-            try {
-                const response = await axios.post(graphPath, { query })
-                expect(response.status).to.equal(200)
-                expect(response.data.data.setCompleted).to.equal(true)
-            } catch (error) {
-                throw new Error(error)
-            }
-        })
-    })
-
     describe('ModifyTodo', () => {
-        it('check', async () => {
-            const todoRepository: Repository<Todos> = getRepository('todos')
-            const result = await todoRepository.createQueryBuilder().where({ description: TEST_TODO_DESCRIPTION }).limit(1).execute()
-            expect(result).lengthOf(1)
+        describe('positive', () => {
+            it('check', async () => {
 
-            const query = `
-                mutation {
-                    modifyTodo(input:{id:${result[0].Todos_id},completed:false})
-                }
-            `
+                const query = gql`
+                    mutation ModifyTodo($input:TodoModifyInput!){
+                        modifyTodo(input:$input){id,description,updatedAt}
+                    }
+                `
 
-            try {
-                const response = await axios.post(graphPath, { query })
+                const response = await useGraphQL(query, { input: { id: currenItemId, description: 'UPDATED' } })
                 expect(response.status).to.equal(200)
                 expect(response.data).not.to.have.property('errors')
-            } catch (error) {
-                throw new Error(error)
-            }
+                expect(response.data.data).to.have.property('modifyTodo')
+                expect(response.data.data.modifyTodo.description).equal('UPDATED')
+            })
         })
     })
 
     describe('RemoveTodo', () => {
-        describe('success', () => {
+        describe('positive', () => {
             it('check', async () => {
 
-                const todoRepository: Repository<Todos> = getRepository('todos')
-                const result = await todoRepository.createQueryBuilder().where({ description: TEST_TODO_DESCRIPTION }).limit(1).execute()
-                expect(result).lengthOf(1)
-
-                const query = `
-                    mutation {
-                        removeTodo(id:${result[0].Todos_id})
+                const query = gql`
+                   mutation RemoveTodo($id:Int!){
+                        removeTodo(id:$id){id,description}
                     }
                 `
-                try {
-                    const response = await axios.post(graphPath, { query })
-                    expect(response.status).to.equal(200)
-                    expect(response.data.data).to.have.property('removeTodo')
-                    expect(response.data.data.removeTodo).to.equal(true)
-                } catch (error) {
-                    throw new Error(error)
-                }
+                const response = await useGraphQL(query, { id: currenItemId })
+                expect(response.status).to.equal(200)
+                expect(response.data.data).to.have.property('removeTodo')
+                expect(response.data.data.removeTodo.id).equal(currenItemId)
             })
         })
     })
