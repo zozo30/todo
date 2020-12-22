@@ -22,8 +22,6 @@ export default async (): Promise<App> => {
 
     initEntities(db)
 
-    await db.sync()
-
     const schema = makeExecutableSchema({
         typeDefs,
         resolvers: buildResolvers(db)

@@ -12,5 +12,5 @@
         "strict": false
     },
     "exclude": ["node_modules", "**/*.test.ts"],
-    "include": ["src"]
+    "include": ["src", "migrations", "config"]
 }

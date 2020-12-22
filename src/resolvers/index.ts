@@ -9,9 +9,7 @@ export default (db: Sequelize): IResolvers => {
     return {
         Query: {
             todos: async (_obj, { filters }, _ctx, info) => {
-
-                const selections = infoToProjection(info.fieldNodes[0], 'items')
-
+                
                 const limit = filters?.pagination?.take !== undefined ? filters.pagination.take : 10
                 const offset = filters?.pagination?.skip !== undefined ? filters.pagination.skip : 0
 
@@ -22,9 +20,10 @@ export default (db: Sequelize): IResolvers => {
                     limit,
                     order: [['createdAt', 'DESC']],
                     where,
-                    attributes: selections
                 } as FindAndCountOptions
 
+                if (info)
+                    query.attributes = infoToProjection(info.fieldNodes[0], 'items')
 
                 if (filters?.completed !== undefined)
                     where.completed = filters.completed
