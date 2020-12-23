@@ -1,7 +1,7 @@
 import { DataTypes, Sequelize } from "sequelize";
 
 export default (sequilize: Sequelize): void => {
-    sequilize.define('Todo', {
+    const Todo = sequilize.define('Todo', {
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -22,6 +22,12 @@ export default (sequilize: Sequelize): void => {
         },
         updatedAt: {
             type: DataTypes.DATE
+        },
+        parentId: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: false,
         }
     })
+    Todo.hasMany(Todo, { as: 'Childrens', foreignKey: 'parentId' })
 }

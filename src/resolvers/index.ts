@@ -2,14 +2,14 @@ import { IResolvers } from 'graphql-tools'
 import { FindAndCountOptions, Op, Sequelize, WhereOptions } from 'sequelize'
 import { infoToProjection } from '../utils/graphql'
 
-export default (db: Sequelize): IResolvers => {
+export default (db: Sequelize | any): IResolvers => {
 
     const model = db.model('Todo')
 
     return {
         Query: {
             todos: async (_obj, { filters }, _ctx, info) => {
-                
+
                 const limit = filters?.pagination?.take !== undefined ? filters.pagination.take : 10
                 const offset = filters?.pagination?.skip !== undefined ? filters.pagination.skip : 0
 
@@ -22,7 +22,7 @@ export default (db: Sequelize): IResolvers => {
                     where,
                 } as FindAndCountOptions
 
-                if (info)
+                if (info && info.fieldNodes && info.fieldNodes.length > 0)
                     query.attributes = infoToProjection(info.fieldNodes[0], 'items')
 
                 if (filters?.completed !== undefined)
@@ -35,7 +35,7 @@ export default (db: Sequelize): IResolvers => {
 
                 return { total: count, items: rows, take: limit, skip: offset }
             },
-            todo: async (_obj, args, _ctx) => model.findOne({ where: { id: args.id } })
+            todo: async (_obj, { id }, _ctx) => model.findOne({ where: { id } })
         },
         Mutation: {
             createTodo: (_obj, { input }, _ctx) => model.create(input),
