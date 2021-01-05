@@ -28,12 +28,13 @@ export default async (): Promise<App> => {
     })
 
     app.use(middlewares.Logger)
+    app.use(middlewares.BasicAuth)
     app.use('/graphql', graphqlHTTP({ schema, graphiql: true }))
     app.use(middlewares.NotFoundRoute)
     app.use(middlewares.Error)
 
     const server = app.listen(Config.port, () => log(`graphQL listening on ${Config.port}`))
-    await once(server, 'listening');
+    await once(server, 'listening')
 
     return {
         app,

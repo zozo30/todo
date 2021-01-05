@@ -1,5 +1,7 @@
 import { IResolvers } from 'graphql-tools'
 import { FindAndCountOptions, Op, Sequelize, WhereOptions } from 'sequelize'
+import { inspect } from 'util'
+import { buildTreeFromFlat, buildTreeRecursive } from '../utils'
 import { infoToProjection } from '../utils/graphql'
 
 export default (db: Sequelize | any): IResolvers => {
@@ -35,7 +37,12 @@ export default (db: Sequelize | any): IResolvers => {
 
                 return { total: count, items: rows, take: limit, skip: offset }
             },
-            todo: async (_obj, { id }, _ctx) => model.findOne({ where: { id } })
+            todo: async (_obj, { id }, _ctx) => model.findOne({ where: { id } }),
+            tree: async (_obj, { }, _ctx) => {
+                const { count, rows } = await model.findAndCountAll({ raw: true })
+                
+                return { total: count, items: buildTreeRecursive(rows) }
+            }
         },
         Mutation: {
             createTodo: (_obj, { input }, _ctx) => model.create(input),

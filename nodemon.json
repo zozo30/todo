@@ -2,5 +2,5 @@
   "watch": ["src"],
   "ext": ".ts",
   "ignore": ["node_modules","**/*.test.ts"],
-  "exec": "ts-node ./src/index.ts"
+  "exec": "node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts"  
 }

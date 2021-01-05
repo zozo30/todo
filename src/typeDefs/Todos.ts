@@ -6,6 +6,7 @@ export default gql`
     type Query{
         todos(filters: TodoFilter): ListResult!
         todo(id: Int!): Todo
+        tree:ListResult!
     }
 
     type Mutation{
@@ -21,6 +22,8 @@ export default gql`
         createdAt: DateTime
         updatedAt: DateTime
         completed: Boolean
+        parentId: Int
+        childrens: [Todo]
     }
 
     input TodoFilter {

@@ -12,5 +12,5 @@
         "strict": false
     },
     "exclude": ["node_modules", "**/*.test.ts"],
-    "include": ["src", "migrations", "config"]
+    "include": ["src", "migrations", "config", "__tests__/resolver.test.ts"]
 }

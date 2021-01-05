@@ -1,15 +1,24 @@
 import buildResolvers from '../src/resolvers'
 import { expect } from 'chai'
 import { FindAndCountOptions, Op } from 'sequelize'
-import { get } from 'lodash'
 import jest from 'jest-mock'
 import { FieldNode } from 'graphql'
+import { get } from 'lodash'
 
 function createMockResolver(resolverNamePath: string, context: { [key: string]: jest.Mock<any> }): Function {
     return <Function>get(buildResolvers({
         model: (_: string) => ({ ...context })
     }), resolverNamePath)
 }
+
+/*
+const mockFn: any = jest.fn(() => Promise.resolve({ count: 1, row: [] }))
+            const { Query: { todos: resolver } }: any = buildResolvers({ model: (_: string) => ({ findAndCountAll: mockFn }) })
+
+            await resolver(null, {})
+
+            expect(mockFn.mock.calls[0][0]).deep.equal({ limit: 10, offset: 0, order: [["createdAt", "DESC"]], where: {} })
+*/
 
 describe('Todo Resolver', () => {
     describe('todos', () => {
