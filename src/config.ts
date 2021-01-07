@@ -16,9 +16,12 @@ const Config = {
     BasicAuthPassword: process.env.BASIC_AUTH_PASSWORD,
     AwsS3AccessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
     AwsS3SecretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
-    AwsS3Bucket: process.env.AWS_S3_BUCKET
+    AwsS3Bucket: process.env.AWS_S3_BUCKET,
+    GithubClientId: process.env.GITHUB_CLIENT_ID,
+    GithubClientSecret: process.env.GITHUB_CLIENT_SECRET,
+    SessionSecret: process.env.SESSION_SECRET
 }
 
-console.log(`config ${process.env.NODE_ENV} loaded:`, Config)
+console.log(`config ${process.env.NODE_ENV} loaded:`)
 
 export default Config

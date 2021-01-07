@@ -1,11 +1,11 @@
 import Error from './error'
 import Logger from './logger'
 import NotFoundRoute from './notFoundRoute'
-import BasicAuth from './basicAuth'
+import Auth from './auth'
 
 export default {
     Error,
     Logger,
     NotFoundRoute,
-    BasicAuth
+    Auth
 }

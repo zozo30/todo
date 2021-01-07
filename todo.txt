@@ -1,2 +1,2 @@
-//aws upload files.
-//outh github....
+//outh github.....,,,
+//static host... bucket. react to s3.. 
