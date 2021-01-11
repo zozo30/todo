@@ -1,2 +1,0 @@
-//outh github.....,,,
-//static host... bucket. react to s3.. 

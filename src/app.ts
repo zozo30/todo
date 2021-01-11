@@ -28,8 +28,9 @@ const appDir = dirname(require.main.filename);
 export default async (): Promise<App> => {
     const app = express()
 
-    app.set('views', resolve('views'))
-    app.set('view engine', 'hbs')
+    //app.set('views', resolve('views'))
+    //app.set('view engine', 'hbs')
+    app.use(cors())
     app.use(express.static(resolve('public')))
 
     const db = await dbInit(Config)
@@ -62,11 +63,10 @@ export default async (): Promise<App> => {
     GitHubAuth(app)
     app.use(middlewares.Auth)
 
-    app.get('/', (req: any, res: any) => res.render('index', { user: req.user }))
+    //app.get('/', (req: any, res: any) => res.render('index', { user: req.user }))
 
 
     app.use(middlewares.Logger)
-    app.use(cors())
     app.use('/graphql', graphqlHTTP({ schema, graphiql: true }))
     app.use(middlewares.NotFoundRoute)
     app.use(middlewares.Error)

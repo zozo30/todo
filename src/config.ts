@@ -2,8 +2,10 @@ import dotenv from 'dotenv'
 import { resolve } from 'path'
 import fs from 'fs'
 
-const envConfig = dotenv.parse(fs.readFileSync(resolve(`.env.${process.env.NODE_ENV}`)))
-Object.keys(envConfig).forEach(key => process.env[key] = envConfig[key])
+if (process.env.NODE_ENV !== 'production') {
+    const envConfig = dotenv.parse(fs.readFileSync(resolve(`.env.${process.env.NODE_ENV}`)))
+    Object.keys(envConfig).forEach(key => process.env[key] = envConfig[key])
+}
 
 const Config = {
     port: process.env.PORT,
@@ -22,6 +24,6 @@ const Config = {
     SessionSecret: process.env.SESSION_SECRET
 }
 
-console.log(`config ${process.env.NODE_ENV} loaded:`)
+console.log(`config ${process.env.NODE_ENV} loaded`)
 
 export default Config
