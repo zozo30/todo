@@ -4,3 +4,6 @@ dist
 .env.development
 database.env
 public
+coverage
+.nyc_output
+todo.txt

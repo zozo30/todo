@@ -4,6 +4,7 @@ import { FindAndCountOptions, Op } from 'sequelize'
 import jest from 'jest-mock'
 import { FieldNode } from 'graphql'
 import { get } from 'lodash'
+import { assert } from 'console'
 
 function createMockResolver(resolverNamePath: string, context: { [key: string]: jest.Mock<any> }): Function {
     return <Function>get(buildResolvers({
@@ -196,9 +197,18 @@ describe('Todo Resolver', () => {
             await resolver(null, { input })
 
             expect(mockFn.mock.calls[0][0]).deep.equal(input)
-            expect(mockFn.mock.calls[0][1].where).deep.equal({
-                id: 1
-            })
+            expect(mockFn.mock.calls[0][1].where).deep.equal({ id: 1 })
+        })
+
+        it('checkNotSuccess', async () => {
+            const mockFn = jest.fn((updateObj: any, matchQuery: FindAndCountOptions) => { return [0, { updateObj, matchQuery }] })
+            const resolver = createMockResolver('Mutation.modifyTodo', { update: mockFn })
+            const input = { id: 1, description: "updated" }
+            try {
+                await resolver(null, { input })
+            } catch (error) {
+                expect(error.message).equal('Update Error')
+            }
         })
     })
 
@@ -213,5 +223,50 @@ describe('Todo Resolver', () => {
             expect(mockFindOneFn.mock.calls[0][0].where).deep.equal({ id: 1 })
             expect(mockDestroyFn.mock.calls[0][0].where).deep.equal({ id: 1 })
         })
+
+        it('notFoundItem', async () => {
+            const resolver = createMockResolver('Mutation.removeTodo', { findOne: jest.fn((_query: FindAndCountOptions) => null) })
+            try {
+                await resolver(null, { id: 1 })
+
+            } catch (error) {
+                expect(error.message).equal('Item not found')
+            } 
+        })
+
+        it('notSuccessDestroy', async () => {
+            const mockFindOneFn = jest.fn((query: FindAndCountOptions) => query)
+            const mockDestroyFn = jest.fn((query: FindAndCountOptions) => false)
+            const resolver = createMockResolver('Mutation.removeTodo', { findOne: mockFindOneFn, destroy: mockDestroyFn })
+
+            try {
+                await resolver(null, { id: 1 })
+            } catch (error) {
+                expect(error.message).equal('Delete failed')
+            }
+        })
     })
+
+    describe('tree', () => {
+        it('check', async () => {
+            const mockFn = jest.fn((_query: FindAndCountOptions) => (
+                {
+                    count: 2, rows: [
+                        { id: 1, description: 'todo.01', parentId: null },
+                        { id: 2, description: 'todo.01', parentId: 1 }
+                    ]
+                }
+            ))
+
+            const resolver = createMockResolver('Query.tree', { findAndCountAll: mockFn })
+
+            const result = await resolver(null, {})
+
+            expect(result.total).equal(2)
+            expect(result.items[0]).to.have.property('id', 1)
+            expect(result.items[0].childrens).is.an('array').lengthOf(1)
+            expect(result.items[0].childrens[0]).to.have.property('id', 2)
+        })
+    })
+
 })

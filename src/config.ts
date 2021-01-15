@@ -16,14 +16,14 @@ const Config = {
     SQLDatabase: process.env.POSTGRES_DB,
     BasicAuthUser: process.env.BASIC_AUTH_USER,
     BasicAuthPassword: process.env.BASIC_AUTH_PASSWORD,
-    AwsS3AccessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
-    AwsS3SecretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+    AwsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    AwsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     AwsS3Bucket: process.env.AWS_S3_BUCKET,
     GithubClientId: process.env.GITHUB_CLIENT_ID,
     GithubClientSecret: process.env.GITHUB_CLIENT_SECRET,
     SessionSecret: process.env.SESSION_SECRET
 }
 
-console.log(`config ${process.env.NODE_ENV} loaded`)
+console.log(`config ${process.env.NODE_ENV} loaded`, Config)
 
 export default Config

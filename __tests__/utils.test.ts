@@ -58,6 +58,7 @@ describe('utils', () => {
                 ]
             } as SelectionSetNode
         } as FieldNode
+
         it('topLevelFieldSelect', () => {
             const result = infoToProjection(resolverInfoObject)
             expect(result).deep.equal(['total', 'take', 'skip', 'items'])
@@ -72,6 +73,102 @@ describe('utils', () => {
             const result = infoToProjection(resolverInfoObject, 'wrong argument')
             expect(result).equal(undefined)
         })
+
+        it('selectionFieldKind not Field', () => {
+            const node = {
+                kind: 'Field',
+                name: {
+                    kind: 'Name',
+                    value: 'todos'
+                },
+                selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                        {
+                            kind: 'Field',
+                            name: { kind: 'Name', value: 'total' }
+                        },
+                        {
+                            kind: 'Field',
+                            name: { kind: 'Name', value: 'take' }
+                        },
+                        {
+                            kind: 'Field',
+                            name: { kind: 'Name', value: 'skip' }
+                        },
+                        {
+                            kind: 'Field',
+                            name: { kind: 'Name', value: 'items' },
+                            selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                    {
+                                        kind: 'Field',
+                                        name: { kind: 'Name', value: 'id' }
+                                    },
+                                    {
+                                        kind: 'Field',
+                                        name: { kind: 'Name', value: 'description' }
+                                    },
+                                    {
+                                        kind: 'Field',
+                                        name: { kind: 'Name', value: 'createdAt' }
+                                    },
+                                    {
+                                        kind: 'Field',
+                                        name: { kind: 'Name', value: 'updatedAt' }
+                                    },
+                                    {
+                                        kind: 'FragmentSpread',
+                                        name: { kind: 'Name', value: 'completed' }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                } as SelectionSetNode
+            } as FieldNode
+
+            const result = infoToProjection(node, 'items')
+            expect(result).deep.equal(['id', 'description', 'createdAt', 'updatedAt'])
+        })
+
+        it('with picSlection and selectionSet is undefined', () => {
+
+            const node = {
+                kind: 'Field',
+                name: {
+                    kind: 'Name',
+                    value: 'todos'
+                },
+                selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                        {
+                            kind: 'Field',
+                            name: { kind: 'Name', value: 'total' }
+                        },
+                        {
+                            kind: 'Field',
+                            name: { kind: 'Name', value: 'take' }
+                        },
+                        {
+                            kind: 'Field',
+                            name: { kind: 'Name', value: 'skip' }
+                        },
+                        {
+                            kind: 'Field',
+                            name: { kind: 'Name', value: 'items' },
+                            selectionSet: undefined
+                        }
+                    ]
+                } as SelectionSetNode
+            } as FieldNode
+
+            const result = infoToProjection(node, 'items')
+            expect(result).equal(undefined)
+        })
+
     })
 
     describe('buildTreeFromFlat', () => {

@@ -12,12 +12,14 @@ import middlewares from './middlewares'
 import { log } from './utils/logger'
 import { Server } from 'http'
 import { once } from 'events'
-import S3Module from './modules/aws'
 import GitHubAuth from './modules/githubAuth'
 import cors from 'cors'
 import passport from 'passport'
 import { Strategy as GitHubStrategy } from 'passport-github2'
 import { resolve, dirname } from 'path'
+import Controllers from './controllers'
+import AwsModule from './modules/aws'
+import bodyParser from 'body-parser'
 
 
 export type ConfigType = typeof Config
@@ -31,6 +33,7 @@ export default async (): Promise<App> => {
     //app.set('views', resolve('views'))
     //app.set('view engine', 'hbs')
     app.use(cors())
+    app.use(bodyParser.json())
     app.use(express.static(resolve('public')))
 
     const db = await dbInit(Config)
@@ -44,6 +47,7 @@ export default async (): Promise<App> => {
 
     console.log(`http://localhost:${Config.port}/auth/github/callback`)
 
+    /*
     passport.serializeUser((user, done) => done(null, user))
     passport.deserializeUser((obj, done) => done(null, obj))
 
@@ -64,21 +68,19 @@ export default async (): Promise<App> => {
     app.use(middlewares.Auth)
 
     //app.get('/', (req: any, res: any) => res.render('index', { user: req.user }))
-
+    */
 
     app.use(middlewares.Logger)
-    app.use('/graphql', graphqlHTTP({ schema, graphiql: true }))
+    app.use('/api/graphql', graphqlHTTP({ schema, graphiql: true }))
+
+    Controllers(app, AwsModule())
+
     app.use(middlewares.NotFoundRoute)
     app.use(middlewares.Error)
 
     const server = app.listen(Config.port, () => log(`graphQL listening on ${Config.port}`))
     await once(server, 'listening')
 
-    const s3Module = S3Module()
-    /*
-    const result = await s3Module.functions.UploadFile('herbig-haro-jet.jpg', resolve('assets/herbig-haro-jet.jpg'), true)
-    console.log(result)
-    */
     return {
         app,
         db,
