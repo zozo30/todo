@@ -4,7 +4,6 @@ import { buildTreeRecursive } from '../utils'
 import { infoToProjection } from '../utils/graphql'
 
 export default (db: Sequelize | any): IResolvers => {
-
     const model = db.model('Todo')
 
     return {

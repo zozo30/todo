@@ -17,9 +17,9 @@ import cors from 'cors'
 import passport from 'passport'
 import { Strategy as GitHubStrategy } from 'passport-github2'
 import { resolve, dirname } from 'path'
-import Controllers from './controllers'
 import AwsModule from './modules/aws'
 import bodyParser from 'body-parser'
+import Routes from './routes'
 
 
 export type ConfigType = typeof Config
@@ -73,7 +73,7 @@ export default async (): Promise<App> => {
     app.use(middlewares.Logger)
     app.use('/api/graphql', graphqlHTTP({ schema, graphiql: true }))
 
-    Controllers(app, AwsModule())
+    Routes(app)
 
     app.use(middlewares.NotFoundRoute)
     app.use(middlewares.Error)

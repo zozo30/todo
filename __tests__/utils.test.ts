@@ -1,7 +1,6 @@
 import { infoToProjection } from '../src/utils/graphql'
 import { buildTreeFromFlat, buildTreeRecursive } from '../src/utils/index'
 import { FieldNode, SelectionSetNode } from 'graphql'
-import { expect } from 'chai'
 
 describe('utils', () => {
     describe('infoToProjection', () => {
@@ -59,22 +58,22 @@ describe('utils', () => {
             } as SelectionSetNode
         } as FieldNode
 
-        it('topLevelFieldSelect', () => {
+        test('topLevelFieldSelect', () => {
             const result = infoToProjection(resolverInfoObject)
-            expect(result).deep.equal(['total', 'take', 'skip', 'items'])
+            expect(result).toEqual(['total', 'take', 'skip', 'items'])
         })
 
-        it('subLevelFieldSelect', () => {
+        test('subLevelFieldSelect', () => {
             const result = infoToProjection(resolverInfoObject, 'items')
-            expect(result).deep.equal(['id', 'description', 'createdAt', 'updatedAt', 'completed'])
+            expect(result).toEqual(['id', 'description', 'createdAt', 'updatedAt', 'completed'])
         })
 
-        it('shouldGiveEmptySelectionsByWrongArgument', () => {
+        test('shouldGiveEmptySelectionsByWrongArgument', () => {
             const result = infoToProjection(resolverInfoObject, 'wrong argument')
-            expect(result).equal(undefined)
+            expect(result).toEqual(undefined)
         })
 
-        it('selectionFieldKind not Field', () => {
+        test('selectionFieldKind not Field', () => {
             const node = {
                 kind: 'Field',
                 name: {
@@ -130,10 +129,10 @@ describe('utils', () => {
             } as FieldNode
 
             const result = infoToProjection(node, 'items')
-            expect(result).deep.equal(['id', 'description', 'createdAt', 'updatedAt'])
+            expect(result).toEqual(['id', 'description', 'createdAt', 'updatedAt'])
         })
 
-        it('with picSlection and selectionSet is undefined', () => {
+        test('with picSlection and selectionSet is undefined', () => {
 
             const node = {
                 kind: 'Field',
@@ -166,7 +165,7 @@ describe('utils', () => {
             } as FieldNode
 
             const result = infoToProjection(node, 'items')
-            expect(result).equal(undefined)
+            expect(result).toEqual(undefined)
         })
 
     })
@@ -183,21 +182,21 @@ describe('utils', () => {
             { id: 8, description: 'root2.1', parentId: 7 },
         ]
 
-        it('check', () => {
+        test('check', () => {
             const result = buildTreeFromFlat(rows)
-            expect(result).lengthOf(2)
-            expect(result[0]).to.have.property('id', 1)
-            expect(result[1]).to.have.property('id', 7)
-            expect(result[0]).to.have.property('childrens').to.be.an('array').lengthOf(2)
-            expect(result[1]).to.have.property('childrens').to.be.an('array').lengthOf(1)
-            expect(result[1].childrens[0]).to.have.property('id', 8)
-            expect(result[0].childrens[0]).to.have.property('id', 2)
-            expect(result[0].childrens[1]).to.have.property('id', 3)
-            expect(result[0].childrens[0].childrens).lengthOf(1)
-            expect(result[0].childrens[0].childrens[0]).to.have.property('id', 4)
-            expect(result[0].childrens[0].childrens[0].childrens).lengthOf(2)
-            expect(result[0].childrens[0].childrens[0].childrens[0]).to.have.property('id', 5)
-            expect(result[0].childrens[0].childrens[0].childrens[1]).to.have.property('id', 6)
+            expect(result).toHaveLength(2)
+            expect(result[0]).toHaveProperty('id', 1)
+            expect(result[1]).toHaveProperty('id', 7)
+            expect(result[0].childrens).toHaveLength(2)
+            expect(result[1].childrens).toHaveLength(1)
+            expect(result[1].childrens[0]).toHaveProperty('id', 8)
+            expect(result[0].childrens[0]).toHaveProperty('id', 2)
+            expect(result[0].childrens[1]).toHaveProperty('id', 3)
+            expect(result[0].childrens[0].childrens).toHaveLength(1)
+            expect(result[0].childrens[0].childrens[0]).toHaveProperty('id', 4)
+            expect(result[0].childrens[0].childrens[0].childrens).toHaveLength(2)
+            expect(result[0].childrens[0].childrens[0].childrens[0]).toHaveProperty('id', 5)
+            expect(result[0].childrens[0].childrens[0].childrens[1]).toHaveProperty('id', 6)
         })
     })
 
@@ -214,18 +213,18 @@ describe('utils', () => {
         ]
 
         const result = buildTreeRecursive(rows)
-        expect(result).lengthOf(2)
-        expect(result[0]).to.have.property('id', 1)
-        expect(result[1]).to.have.property('id', 7)
-        expect(result[0]).to.have.property('childrens').to.be.an('array').lengthOf(2)
-        expect(result[1]).to.have.property('childrens').to.be.an('array').lengthOf(1)
-        expect(result[1].childrens[0]).to.have.property('id', 8)
-        expect(result[0].childrens[0]).to.have.property('id', 2)
-        expect(result[0].childrens[1]).to.have.property('id', 3)
-        expect(result[0].childrens[0].childrens).lengthOf(1)
-        expect(result[0].childrens[0].childrens[0]).to.have.property('id', 4)
-        expect(result[0].childrens[0].childrens[0].childrens).lengthOf(2)
-        expect(result[0].childrens[0].childrens[0].childrens[0]).to.have.property('id', 5)
-        expect(result[0].childrens[0].childrens[0].childrens[1]).to.have.property('id', 6)
+        expect(result).toHaveLength(2)
+        expect(result[0]).toHaveProperty('id', 1)
+        expect(result[1]).toHaveProperty('id', 7)
+        expect(result[0].childrens).toHaveLength(2)
+        expect(result[1].childrens).toHaveLength(1)
+        expect(result[1].childrens[0]).toHaveProperty('id', 8)
+        expect(result[0].childrens[0]).toHaveProperty('id', 2)
+        expect(result[0].childrens[1]).toHaveProperty('id', 3)
+        expect(result[0].childrens[0].childrens).toHaveLength(1)
+        expect(result[0].childrens[0].childrens[0]).toHaveProperty('id', 4)
+        expect(result[0].childrens[0].childrens[0].childrens).toHaveLength(2)
+        expect(result[0].childrens[0].childrens[0].childrens[0]).toHaveProperty('id', 5)
+        expect(result[0].childrens[0].childrens[0].childrens[1]).toHaveProperty('id', 6)
     })
 })
